@@ -1,5 +1,7 @@
 provider "aws" {
-  region = "eu-west-2"
+  access_key = var.AWS_ACCESS_KEY
+  secret_key = var.AWS_SECRET_KEY
+  region = var.AWS_REGION
 }
 
 provider "azurerm" {
@@ -29,6 +31,10 @@ resource "aws_network_interface" "netint" {
   subnet_id = aws_subnet.subnet.id
 }
 
+resource "aws_key_pair" "ssh" {
+  key_name = "bv"
+  public_key = file("aws-ssh.pub")
+}
 resource "aws_instance" "vm-aws" {
   ami = "ami-0fbec3e0504ee1970"
   instance_type = "t2.micro"
@@ -38,10 +44,13 @@ resource "aws_instance" "vm-aws" {
     network_interface_id = aws_network_interface.netint.id
   }
 
+  key_name = aws_key_pair.ssh.key_name
+  
   tags = {
     "Name" = "bv-i"
   }
 }
+
 
 
 #Azure
@@ -113,3 +122,4 @@ resource "azurerm_virtual_machine" "vm" {
     disable_password_authentication = false
   }
 }
+
